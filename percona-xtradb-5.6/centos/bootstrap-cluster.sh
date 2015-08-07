@@ -37,17 +37,18 @@ for ((i=1; i<=cnt; i++)); do
 done
 address="wsrep_cluster_address = gcomm://$address"
 address=${address%?}
+ssh_opts="-oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no -oNumberOfPasswordPrompts=0 -oConnectTimeout=10 -i id_rsa"
 echo "** $address"
 echo ""
 for h in "${hosts[@]}"; do
     echo "ssh $user@$h \"sed -i \"s|.*wsrep_cluster_address.*=.*|$address|g\" $mycnf\""
-    ssh -i id_rsa $user@$h "sed -i \"s|.*wsrep_cluster_address.*=.*|$address|g\" $mycnf"
+    ssh $ssh_opts $user@$h "sed -i \"s|.*wsrep_cluster_address.*=.*|$address|g\" $mycnf"
 done
 
 init_node=${hosts[0]}
 unset hosts[0]
 
 for h in "${hosts[@]}"; do
-    exec_cmd ssh -i id_rsa $user@$h "rm -f /var/lib/mysql/grastate.dat && service mysql restart --wsrep-cluster-address=gcomm://$init_node:$port"
+    exec_cmd ssh $ssh_opts $user@$h "rm -f /var/lib/mysql/grastate.dat && service mysql restart --wsrep-cluster-address=gcomm://$init_node:$port"
     echo "***"
 done
