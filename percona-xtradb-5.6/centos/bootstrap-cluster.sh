@@ -46,10 +46,10 @@ for h in "${hosts[@]}"; do
 done
 
 init_node=${hosts[0]}
-exec_cmd ssh $ssh_opts $user@$init_node "killall -9 mysqld mysqld_safe; sleep 10s && rm -f /var/lib/mysql/mysqld.pid && service mysql bootstrap-pxc"
+exec_cmd ssh $ssh_opts $user@$init_node "killall -9 mysqld mysqld_safe; sleep 5s && rm -f /var/lib/mysql/mysqld.pid /var/lock/subsys/mysql && service mysql bootstrap-pxc"
 unset hosts[0]
 
 for h in "${hosts[@]}"; do
-    exec_cmd ssh $ssh_opts $user@$h "killall -9 mysqld mysqld_safe; rm -f /var/lib/mysql/grastate.dat && service mysql restart --wsrep-cluster-address=gcomm://$init_node:$port"
+    exec_cmd ssh $ssh_opts $user@$h "killall -9 mysqld mysqld_safe; sleep 5s && rm -f /var/lib/mysql/mysqld.pid /var/lock/subsys/mysql && service mysql start --wsrep-cluster-address=gcomm://$init_node:$port"
     echo "***"
 done
